@@ -7,6 +7,14 @@ prop.table(table(train$Sex,train$Survived),1)
 prop.table(table(train$Embarked,train$Survived),1) 
 #class c has higher chance to survive from disaster compared with other classes.
 
+train$Child<-0
+train$Child[train$Age<18]<-1
+
+aggregate(Survived~Child+Sex, data=train, FUN=sum)
+aggregate(Survived~Child+Sex, data=train, FUN=function(x){sum(x)/length(x)})
+#Female Child has higher chance to survive from disaster
+
+
 #Data preparation
 trainset<-subset(train,select=c('Survived', 'Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Embarked','Fare'))
 
@@ -24,6 +32,20 @@ testset$Age[is.na(testset$Age)]<-median(testset$Age,na.rm=TRUE)
 #convert sex into binary variable
 trainset$Sex<-ifelse(trainset$Sex=="male",1,0)
 testset$Sex<-ifelse(testset$Sex=="male",1,0)
+
+#Create Title 
+trainset$Name<-as.character(trainset$Name)
+strsplit(trainset$Name,split='[,.]')[[1]]
+trainset$Title<-sapply(trainset$Name,FUN=function(x){strsplit(x,split='[,.]')[[1]][2]})
+
+table(trainset$Title)
+
+trainset$Title[trainset$Title %in% c('Mlle','Mme')]<-"Mlle"
+trainset$Title[trainset$Title %in% c('Dona','Jonkheer','the Countess','Lady')]<-"Lady"
+trainset$Title[trainset$Title %in% c('Capt','Don','Major','Sir')]<-"Sir"
+trainset$Title<-factor(trainset$Title)
+
+table(trainset$Title)
 
 #create a family size
 trainset$familysize<-as.numeric(trainset$SibSp+trainset$Parch+1)
